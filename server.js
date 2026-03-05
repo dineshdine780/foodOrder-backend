@@ -18,6 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
+app.set("io", io);
+
 
 app.use("/api/users", userAuthRoutes);
 app.use("/api/tables", tableRoutes);

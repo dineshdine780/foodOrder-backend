@@ -20,6 +20,10 @@ router.post("/", async (req, res) => {
     const newFood = new Food({ name, price, image });
     await newFood.save();
 
+    const io = req.app.get("io");
+
+  io.emit("foodAdded", newFood);
+
     res.json({ message: "Food added successfully" });
   } catch (err) {
     res.status(500).json({ message: "Error adding food" }); 
