@@ -14,10 +14,18 @@ const OrderSchema = new mongoose.Schema({
 
   total: { type: Number, default: 0 },
 
+ status: {
+  type: String,
+  enum: ["Preparing", "Ready", "Served", "Completed"],
+  default: "Preparing",
+},
+
   createdAt: {
     type: Date,
     default: Date.now,
   }
-});
+});  
+
+
 
 module.exports = mongoose.model("Order", OrderSchema);

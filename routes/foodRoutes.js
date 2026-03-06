@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Food = require("../models/Food");
 
-
 router.get("/", async (req, res) => {
   try {
     const foods = await Food.find();
@@ -11,9 +10,8 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: "Error fetching foods" });    
   } 
 });
-   
- 
-router.post("/", async (req, res) => {
+
+router.post("/", async (req, res) => { 
   try {
     const { name, price, image } = req.body;
 
@@ -28,16 +26,17 @@ router.post("/", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Error adding food" }); 
   }
-});
-
+}); 
 
 router.delete("/:id", async (req, res) => {
-  try {
+  try { 
     await Food.findByIdAndDelete(req.params.id);
     res.json({ message: "Food deleted" });
   } catch (err) {
     res.status(500).json({ message: "Error deleting food" });
   }
 }); 
+
+
 
 module.exports = router;

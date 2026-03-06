@@ -17,6 +17,9 @@ router.post("/", async (req, res) => {
 
   await newOrder.save();
 
+  const io = req.app.get("io");
+  io.emit("newOrder", newOrder);
+
   res.json({ message: "Order Placed", newOrder });
 });
 
@@ -60,13 +63,48 @@ router.get("/table/:tableId/chair/:chairId", async (req, res) => {
   res.json(order);
 });
 
+router.put("/:id/status", async (req, res) => {
+  const { status } = req.body;
+
+  const order = await Order.findByIdAndUpdate(
+    req.params.id,
+    { status },
+    { new: true }
+  );
+
+  const io = req.app.get("io");
+  io.emit("orderUpdated", order);
+
+  res.json(order);
+});
+
 
 router.delete("/table/:tableId/chair/:chairId", async (req, res) => {
   const { tableId, chairId } = req.params;
 
-  await Order.findOneAndDelete({ tableId, chairId });
+  // await Order.findOneAndDelete({ tableId, chairId });
+
+  await Order.deleteMany({
+  tableId: Number(tableId),
+  chairId: Number(chairId)
+});
 
   res.json({ message: "Bill cleared" });
+});
+
+
+router.delete("/table/:tableId/complete", async (req, res) => {
+  try {
+
+    const tableId = Number(req.params.tableId);
+
+    await Order.deleteMany({ tableId: tableId });
+
+    res.json({ message: "Table bill completed and cleared" });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 
@@ -89,5 +127,23 @@ router.get("/", async (req, res) => {
   const orders = await Order.find().sort({ createdAt: -1 });
   res.json(orders);
 });
+
+
+router.put("/orders/:id/complete", async (req, res) => {
+  try {
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status: "completed" },
+      { new: true }
+    );
+
+    res.json(order);
+
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
 
 module.exports = router;
