@@ -1,6 +1,13 @@
 const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema({
+
+   userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+
   tableId: String,
   chairId: String,
   items: [
@@ -11,6 +18,11 @@ const OrderSchema = new mongoose.Schema({
       image: String,
     },
   ],
+
+  serverName:{
+  type:String,
+  required:true
+},
 
   total: { type: Number, default: 0 },
 
