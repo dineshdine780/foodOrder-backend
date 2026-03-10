@@ -83,7 +83,7 @@ const server = http.createServer(app);
 
 app.use(
   cors({
-    origin: ["*", "https://clinquant-pavlova-2405e7.netlify.app/"],
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -96,7 +96,7 @@ app.use(helmet());
 
 const io = new Server(server, {
   cors: {
-    origin: ["*", "https://clinquant-pavlova-2405e7.netlify.app/"],
+    origin: "*",
     methods: ["GET", "POST"],
   },
   pingTimeout: 60000,
