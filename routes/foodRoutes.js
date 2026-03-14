@@ -13,9 +13,9 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => { 
   try {
-    const { name, price, image } = req.body;
+    const { name, category, price, image } = req.body;
 
-    const newFood = new Food({ name, price, image });
+    const newFood = new Food({ name,category, price, image });
     await newFood.save();
 
     const io = req.app.get("io");
@@ -27,6 +27,22 @@ router.post("/", async (req, res) => {
     res.status(500).json({ message: "Error adding food" }); 
   }
 }); 
+
+
+router.put("/:id", async (req, res) => {
+  try {
+    const food = await Food.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    res.json(food);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 router.delete("/:id", async (req, res) => {
   try { 

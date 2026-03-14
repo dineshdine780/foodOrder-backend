@@ -8,29 +8,16 @@ const { getLiveOrders, getOrderById } = require("../controllers/orderController"
 router.get("/live", getLiveOrders);
 
 
-
-
-
-
 router.post("/", protectUser, async (req, res) => {
-
+    
   const { tableId, chairId, items, orderType, customerName } = req.body;
-
+   
   if (!items || items.length === 0) {
     return res.status(400).json({ message: "No food items provided" });
   }
-
+   
   const total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
-
-  // const newOrder = new Order({
-  //   userId: req.user._id,
-  //   serverName: req.user.name,
-  //   tableId,
-  //   chairId,
-  //   items,
-  //   total
-  // });
-
+  
 
   const newOrder = new Order({
   userId: req.user._id,
@@ -43,17 +30,14 @@ router.post("/", protectUser, async (req, res) => {
   customerName
 });
 
-  await newOrder.save();
+  await newOrder.save(); 
 
   const io = req.app.get("io");
   io.emit("orderPlaced", newOrder);
 
   res.json({ message: "Order Placed", newOrder });
 
-});
-
-
-
+}); 
 
 
 router.get("/table/:tableId", protectUser, async (req, res) => {
@@ -79,7 +63,7 @@ router.get("/table/:tableId", protectUser, async (req, res) => {
       order.items.forEach(item => {
         chairMap[order.chairId].total += item.price * item.qty;
       });
-    });
+    });  
 
     res.json(Object.values(chairMap));
 
@@ -87,10 +71,6 @@ router.get("/table/:tableId", protectUser, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-
-
-
 
 
 router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
@@ -116,7 +96,7 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
         items.push(item);
         total += item.price * item.qty;
       });
-    });
+    }); 
 
     res.json({ items, total, status });
 
@@ -124,7 +104,6 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 
 
@@ -147,8 +126,6 @@ router.put("/:id/status", async (req, res) => {
 
 
 
-
-
 router.delete("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
   const { tableId, chairId } = req.params;
 
@@ -160,9 +137,9 @@ router.delete("/table/:tableId/chair/:chairId", protectUser, async (req, res) =>
 
   res.json({ message: "Bill cleared" });
 });
+   
 
-
-
+ 
 router.delete("/table/:tableId/complete", protectUser, async (req, res) => {
   try {
 
@@ -182,11 +159,9 @@ router.delete("/table/:tableId/complete", protectUser, async (req, res) => {
   }
 });
 
-
-
+ 
 router.get("/parcel", protectUser, async (req, res) => {
   try {
-
     const orders = await Order.find({
       orderType: "parcel",
       userId: req.user.id
@@ -198,8 +173,7 @@ router.get("/parcel", protectUser, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-
+ 
 
 router.post("/combined", protectUser, async (req, res) => {
   const { chairs, tableId } = req.body;
@@ -214,12 +188,9 @@ router.post("/combined", protectUser, async (req, res) => {
 
   res.json({ total });
 });
-
-
-
-
-
-
+ 
+ 
+ 
 router.get("/", async (req, res) => {
   const orders = await Order.find()
     .populate("userId", "name")
@@ -238,13 +209,14 @@ router.get("/", protectUser, async (req, res) => {
     .sort({ createdAt: -1 });
 
   res.json(orders);
-});
-
+}); 
+ 
    
 
-router.put("/orders/:id/complete", async (req, res) => {
-  try {
 
+
+router.put("/:id/complete", async (req, res) => {
+  try {
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       { status: "completed" },
@@ -256,10 +228,10 @@ router.put("/orders/:id/complete", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
-});
-
-   
-
+});  
+  
+ 
+ 
 router.put("/:id/cancel", async (req, res) => {
 
   const order = await Order.findByIdAndUpdate(
@@ -274,8 +246,6 @@ router.put("/:id/cancel", async (req, res) => {
   res.json(order);
 
 });
-
-
 
 
 
