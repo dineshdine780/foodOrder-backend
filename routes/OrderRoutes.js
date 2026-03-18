@@ -3,9 +3,12 @@ const router = express.Router();
 const Order = require("../models/Order");
 const protectUser = require("../middleware/protectUser");
 
-const { getLiveOrders, getOrderById } = require("../controllers/orderController");
+const { getLiveOrders, getOrderById, getOrderHistory } = require("../controllers/orderController");
 
 router.get("/live", getLiveOrders);
+router.get("/history", getOrderHistory);
+
+
 
 
 router.post("/", protectUser, async (req, res) => {
@@ -38,6 +41,7 @@ router.post("/", protectUser, async (req, res) => {
   res.json({ message: "Order Placed", newOrder });
 
 }); 
+
 
 
 router.get("/table/:tableId", protectUser, async (req, res) => {
@@ -107,6 +111,69 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
 
 
 
+
+router.put("/table/:tableId/chair/:chairId/ready-for-bill", protectUser, async (req, res) => {
+
+  try {
+
+    const { tableId, chairId } = req.params;
+
+    const orders = await Order.updateMany(
+      {
+        tableId,
+        chairId,
+        userId: req.user.id,
+        status: "Served"
+      },
+      {
+        status: "ReadyForBill"
+      }
+    );
+
+     const io = req.app.get("io");
+
+const updatedOrders = await Order.find({
+  tableId,
+  chairId,
+  userId: req.user.id
+});
+
+updatedOrders.forEach(order => {
+  io.emit("orderUpdated", order);
+});
+
+    res.json({ message: "Order moved to Ready For Bill", orders });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+
+});
+
+
+
+router.put("/table/:tableId/ready-for-bill", async (req, res) => {
+  try {
+
+    const { tableId } = req.params;
+
+    await Order.updateMany(
+      { tableId: tableId },
+      { $set: { status: "ReadyForBill" } }
+    );
+
+    res.json({ message: "Table moved to ReadyForBill" });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+
+
+
 router.put("/:id/status", async (req, res) => {
 
   const { status } = req.body;
@@ -172,7 +239,7 @@ router.get("/parcel", protectUser, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
+}); 
  
 
 router.post("/combined", protectUser, async (req, res) => {
@@ -210,6 +277,31 @@ router.get("/", protectUser, async (req, res) => {
 
   res.json(orders);
 }); 
+
+
+
+router.get("/completed-today", async (req, res) => {
+
+  try {
+
+    const start = new Date();
+    start.setHours(0,0,0,0);
+
+    const end = new Date();
+    end.setHours(23,59,59,999);
+
+    const count = await Order.countDocuments({
+      status: { $in: ["Completed", "completed"] },
+      createdAt: { $gte: start, $lte: end }
+    });
+
+    res.json({ completed: count });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+
+});
  
    
 
@@ -219,7 +311,7 @@ router.put("/:id/complete", async (req, res) => {
   try {
     const order = await Order.findByIdAndUpdate(
       req.params.id,
-      { status: "completed" },
+      { status: "Completed" },
       { new: true }
     );
 
@@ -244,9 +336,7 @@ router.put("/:id/cancel", async (req, res) => {
   io.emit("orderUpdated", order);
 
   res.json(order);
-
 });
-
 
 
 router.get("/:id", protectUser, async (req, res) => {
@@ -264,6 +354,8 @@ router.get("/:id", protectUser, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 
 module.exports = router;

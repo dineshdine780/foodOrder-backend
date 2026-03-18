@@ -1,82 +1,3 @@
-// const Order = require("../models/Order");
-
-// exports.getLiveOrders = async (req, res) => {
-//   try {
-
-//     const orders = await Order.find().sort({ createdAt: -1 });
-
-//     const tables = {};
-
-//     orders.forEach(order => {
-
-//       const { tableId, chairId, items } = order;
-
-//       if (!tables[tableId]) {
-//         tables[tableId] = {
-//           server: "Server", 
-//           chairs: {}
-//         };
-//       }
-
-//       if (!tables[tableId].chairs[chairId]) {
-//         tables[tableId].chairs[chairId] = [];
-//       }
-
-//       tables[tableId].chairs[chairId].push(...items);
-
-//     });
-
-//     res.json(tables);
-
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
-
-
-
-
-// const Order = require("../models/Order");
-
-// exports.getLiveOrders = async (req, res) => {
-//   try {
-
-//     const orders = await Order.find().sort({ createdAt: -1 });
-
-//     const tables = {};
-
-//     orders.forEach(order => {
-
-//       const { tableId, chairId, items, serverName, status } = order;
-
-//       if (!tables[tableId]) {
-//         tables[tableId] = {
-//           server: serverName || "Unknown Server",
-//           chairs: {}
-//         };
-//       }
-
-//       if (!tables[tableId].chairs[chairId]) {
-//         tables[tableId].chairs[chairId] = [];
-//       }
-
-//       tables[tableId].chairs[chairId].push({
-//   items,
-//   status: status || "Preparing"
-// });
-
-//     });
-
-//     res.json(tables);
-
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
 
 
 const Order = require("../models/Order");
@@ -84,7 +5,9 @@ const Order = require("../models/Order");
 exports.getLiveOrders = async (req, res) => {
   try {
 
-    const orders = await Order.find().sort({ createdAt: -1 });
+   const orders = await Order.find({
+    status: { $nin: ["Completed", "completed"] }
+   }).sort({ createdAt: -1 });
 
     const tables = {};
 
@@ -152,6 +75,10 @@ exports.completeOrder = async (req, res) => {
       { new: true }
     );
 
+    
+    const io = req.app.get("io");
+    io.emit("orderUpdated", order);
+
     res.json(order);
 
   } catch (error) {
@@ -178,3 +105,45 @@ exports.getOrderById = async (req, res) => {
 };
 
 
+exports.getOrderHistory = async (req, res) => {
+  try {
+
+    const { date, item, user } = req.query;
+
+    let filter = { status: "Completed" };
+
+  
+    if (date) {
+      const start = new Date(date);
+      const end = new Date(date);
+
+      end.setHours(23, 59, 59, 999);
+
+      filter.createdAt = {
+        $gte: start,
+        $lte: end
+      };
+    }
+
+    
+    if (user) {
+      filter.serverName = user;
+    }
+
+    let orders = await Order.find(filter).sort({ createdAt: -1 });
+
+    
+    if (item) {
+      orders = orders.filter(order =>
+        order.items.some(i =>
+          i.name.toLowerCase().includes(item.toLowerCase())
+        )
+      );
+    }
+
+    res.json(orders);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
