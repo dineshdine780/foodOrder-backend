@@ -152,22 +152,56 @@ updatedOrders.forEach(order => {
 
 
 
+// router.put("/table/:tableId/ready-for-bill", async (req, res) => {
+//   try {
+
+//     const { tableId } = req.params;
+
+//     await Order.updateMany(
+//       { tableId: tableId },
+//       { $set: { status: "ReadyForBill" } }
+//     );
+
+//     res.json({ message: "Table moved to ReadyForBill" });
+
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+
+
 router.put("/table/:tableId/ready-for-bill", async (req, res) => {
-  try {
 
-    const { tableId } = req.params;
+  const tableId = req.params.tableId;
 
-    await Order.updateMany(
-      { tableId: tableId },
-      { $set: { status: "ReadyForBill" } }
-    );
+  await Order.updateMany(
+    {
+      tableId: tableId,
+      status: { $ne: "Completed" }
+    },
+    {
+      $set: { status: "ReadyForBill" }
+    }
+  );
 
-    res.json({ message: "Table moved to ReadyForBill" });
+  res.json({ message: "Table moved to ReadyForBill" });
 
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error" });
-  }
+});
+
+
+
+
+router.get("/table/:tableId", async (req, res) => {
+
+  const orders = await Order.find({
+    tableId: req.params.tableId,
+    status: { $ne: "Completed" }
+  });
+
+  res.json(orders);
+
 });
 
 
