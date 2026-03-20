@@ -107,22 +107,42 @@ exports.getOrderById = async (req, res) => {
 
 exports.getOrderHistory = async (req, res) => {
   try {
-    const { date, item, user } = req.query;
+    const { fromDate, toDate, date, item, user } = req.query;
 
-    let filter = {}; 
-   
+    let filter = {};
+
+    // ✅ SINGLE DATE (FIXED)
     if (date) {
-      const start = new Date(date + "T00:00:00.000+05:30");
-      const end = new Date(date + "T23:59:59.999+05:30");
+      const start = new Date(date);
+      start.setUTCHours(0, 0, 0, 0);
 
-      filter.createdAt = { $gte: start, $lte: end };
+      const end = new Date(date);
+      end.setUTCHours(23, 59, 59, 999);
+
+      filter.createdAt = {
+        $gte: start,
+        $lte: end
+      };
+    }
+
+    // ✅ DATE RANGE (FIXED)
+    else if (fromDate && toDate) {
+      const start = new Date(fromDate);
+      start.setUTCHours(0, 0, 0, 0);
+
+      const end = new Date(toDate);
+      end.setUTCHours(23, 59, 59, 999);
+
+      filter.createdAt = {
+        $gte: start,
+        $lte: end
+      };
     }
 
     if (user) {
       filter.serverName = { $regex: user, $options: "i" };
     }
 
-    
     if (item) {
       filter["items.name"] = { $regex: item, $options: "i" };
     }
@@ -131,9 +151,54 @@ exports.getOrderHistory = async (req, res) => {
 
     const orders = await Order.find(filter).sort({ createdAt: -1 });
 
-    console.log("ORDERS COUNT:", orders.length);
+    console.log("ORDERS:", orders.length);
 
     res.json(orders);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.getMonthlyReport = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    
+    const currentDate = new Date();
+    const selectedMonth = month ? Number(month) : currentDate.getMonth() + 1;
+    const selectedYear = year ? Number(year) : currentDate.getFullYear();
+
+    const start = new Date(selectedYear, selectedMonth - 1, 1);
+    const end = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999);
+
+    const orders = await Order.find({
+      createdAt: { $gte: start, $lte: end },
+      status: { $in: ["Completed", "completed"] }
+    });
+
+    
+    const dailySales = {};
+    let total = 0;
+
+    orders.forEach(order => {
+      const day = new Date(order.createdAt).getDate();
+
+      if (!dailySales[day]) {
+        dailySales[day] = 0;
+      }
+
+      dailySales[day] += order.total;
+      total += order.total;
+    });
+
+    res.json({
+      month: selectedMonth,
+      year: selectedYear,
+      total,
+      dailySales
+    });
 
   } catch (error) {
     res.status(500).json({ error: error.message });

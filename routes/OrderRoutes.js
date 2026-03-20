@@ -3,10 +3,11 @@ const router = express.Router();
 const Order = require("../models/Order");
 const protectUser = require("../middleware/protectUser");
 
-const { getLiveOrders, getOrderById, getOrderHistory } = require("../controllers/orderController");
+const { getLiveOrders, getOrderById, getOrderHistory, getMonthlyReport } = require("../controllers/orderController");
 
 router.get("/live", getLiveOrders);
 router.get("/history", getOrderHistory);
+router.get("/report/monthly", getMonthlyReport);
 
 
 
