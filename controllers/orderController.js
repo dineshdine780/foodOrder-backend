@@ -107,39 +107,31 @@ exports.getOrderById = async (req, res) => {
 
 exports.getOrderHistory = async (req, res) => {
   try {
-
     const { date, item, user } = req.query;
 
-    let filter = { status: "Completed" };
-
-  
+    let filter = {}; 
+   
     if (date) {
-      const start = new Date(date);
-      const end = new Date(date);
+      const start = new Date(date + "T00:00:00.000+05:30");
+      const end = new Date(date + "T23:59:59.999+05:30");
 
-      end.setHours(23, 59, 59, 999);
-
-      filter.createdAt = {
-        $gte: start,
-        $lte: end
-      };
+      filter.createdAt = { $gte: start, $lte: end };
     }
 
-    
     if (user) {
-      filter.serverName = user;
+      filter.serverName = { $regex: user, $options: "i" };
     }
-
-    let orders = await Order.find(filter).sort({ createdAt: -1 });
 
     
     if (item) {
-      orders = orders.filter(order =>
-        order.items.some(i =>
-          i.name.toLowerCase().includes(item.toLowerCase())
-        )
-      );
+      filter["items.name"] = { $regex: item, $options: "i" };
     }
+
+    console.log("FILTER:", filter);
+
+    const orders = await Order.find(filter).sort({ createdAt: -1 });
+
+    console.log("ORDERS COUNT:", orders.length);
 
     res.json(orders);
 
