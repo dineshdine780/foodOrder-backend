@@ -107,11 +107,11 @@ exports.getOrderById = async (req, res) => {
 
 exports.getOrderHistory = async (req, res) => {
   try {
-    const { fromDate, toDate, date, item, user } = req.query;
+    const { fromDate, toDate, date, item, user, category } = req.query;
 
     let filter = {};
 
-    // ✅ SINGLE DATE (FIXED)
+    // 📅 Date filter
     if (date) {
       const start = new Date(date);
       start.setUTCHours(0, 0, 0, 0);
@@ -119,13 +119,8 @@ exports.getOrderHistory = async (req, res) => {
       const end = new Date(date);
       end.setUTCHours(23, 59, 59, 999);
 
-      filter.createdAt = {
-        $gte: start,
-        $lte: end
-      };
-    }
-
-    // ✅ DATE RANGE (FIXED)
+      filter.createdAt = { $gte: start, $lte: end };
+    } 
     else if (fromDate && toDate) {
       const start = new Date(fromDate);
       start.setUTCHours(0, 0, 0, 0);
@@ -133,25 +128,29 @@ exports.getOrderHistory = async (req, res) => {
       const end = new Date(toDate);
       end.setUTCHours(23, 59, 59, 999);
 
-      filter.createdAt = {
-        $gte: start,
-        $lte: end
-      };
+      filter.createdAt = { $gte: start, $lte: end };
     }
 
+    
     if (user) {
       filter.serverName = { $regex: user, $options: "i" };
     }
 
+    
     if (item) {
       filter["items.name"] = { $regex: item, $options: "i" };
     }
 
-    console.log("FILTER:", filter);
+    
+    if (category) {
+  filter.items = {
+    $elemMatch: {
+      category: category
+    }
+  };
+}
 
     const orders = await Order.find(filter).sort({ createdAt: -1 });
-
-    console.log("ORDERS:", orders.length);
 
     res.json(orders);
 

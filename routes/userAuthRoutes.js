@@ -74,7 +74,8 @@ router.post("/login", loginLimiter, async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
+    
+    vant
     
     const token = jwt.sign(
       { id: user._id },

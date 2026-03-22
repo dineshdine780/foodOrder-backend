@@ -23,12 +23,22 @@ router.post("/", protectUser, async (req, res) => {
   const total = items.reduce((acc, item) => acc + item.price * item.qty, 0);
   
 
-  const newOrder = new Order({
+ 
+const newItems = items.map(item => ({
+  name: item.name,
+  qty: item.qty,
+  price: item.price,
+  image: item.image,
+  category: item.category || "General"  
+}));
+
+
+const newOrder = new Order({
   userId: req.user._id,
   serverName: req.user.name,
   tableId,
   chairId,
-  items,
+  items: newItems,   
   total,
   orderType,
   customerName
@@ -194,16 +204,16 @@ router.put("/table/:tableId/ready-for-bill", async (req, res) => {
 
 
 
-router.get("/table/:tableId", async (req, res) => {
+// router.get("/table/:tableId", async (req, res) => {
 
-  const orders = await Order.find({
-    tableId: req.params.tableId,
-    status: { $ne: "Completed" }
-  });
+//   const orders = await Order.find({
+//     tableId: req.params.tableId,
+//     status: { $ne: "Completed" }
+//   });
 
-  res.json(orders);
+//   res.json(orders);
 
-});
+// });
 
 
 
