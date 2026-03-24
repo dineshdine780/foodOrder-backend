@@ -1,6 +1,4 @@
 
-
-const { lazy } = require("react");
 const Order = require("../models/Order");
 
 exports.getLiveOrders = async (req, res) => {
@@ -85,7 +83,10 @@ exports.completeOrder = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
+}; 
+
+
+
 
 exports.getOrderById = async (req, res) => {
   try {
