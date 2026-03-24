@@ -1,5 +1,6 @@
 
 
+const { lazy } = require("react");
 const Order = require("../models/Order");
 
 exports.getLiveOrders = async (req, res) => {
@@ -86,8 +87,6 @@ exports.completeOrder = async (req, res) => {
   }
 };
 
-
-
 exports.getOrderById = async (req, res) => {
   try {
 
@@ -102,8 +101,9 @@ exports.getOrderById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-};
-
+}; 
+ 
+ 
 
 exports.getOrderHistory = async (req, res) => {
   try {
@@ -111,7 +111,7 @@ exports.getOrderHistory = async (req, res) => {
 
     let filter = {};
 
-    // 📅 Date filter
+    
     if (date) {
       const start = new Date(date);
       start.setUTCHours(0, 0, 0, 0);
@@ -150,7 +150,7 @@ exports.getOrderHistory = async (req, res) => {
   };
 }
 
-    const orders = await Order.find(filter).sort({ createdAt: -1 });
+    const orders = await Order.find(filter).sort({ createdAt: 1 });
 
     res.json(orders);
 
@@ -198,6 +198,7 @@ exports.getMonthlyReport = async (req, res) => {
       total,
       dailySales
     });
+
 
   } catch (error) {
     res.status(500).json({ error: error.message });
