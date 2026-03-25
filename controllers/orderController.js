@@ -143,12 +143,25 @@ exports.getOrderHistory = async (req, res) => {
     }
 
     
-    if (category) {
+    if (category && item) {
+  filter.items = {
+    $elemMatch: {
+      category: category,
+      name: { $regex: item, $options: "i" }
+    }
+  };
+}
+ 
+else if (category) {
   filter.items = {
     $elemMatch: {
       category: category
     }
   };
+} 
+
+else if (item) {
+  filter["items.name"] = { $regex: item, $options: "i" };
 }
 
     const orders = await Order.find(filter).sort({ createdAt: 1 });

@@ -59,9 +59,15 @@ router.get("/table/:tableId", protectUser, async (req, res) => {
   try {
     const { tableId } = req.params;
 
+    // const orders = await Order.find({
+    //   tableId,
+    //   userId: req.user.id
+    // });
+
     const orders = await Order.find({
       tableId,
-      userId: req.user.id
+      userId: req.user.id,
+      status: { $ne: "Completed" }   
     });
 
     const chairMap = {};
@@ -94,11 +100,18 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
 
     // const orders = await Order.find({ tableId, chairId });
 
+    // const orders = await Order.find({
+    //   tableId,
+    //   chairId,
+    //   userId: req.user.id
+    // });
+
     const orders = await Order.find({
-      tableId,
-      chairId,
-      userId: req.user.id
-    });
+  tableId,
+  chairId,
+  userId: req.user.id,
+  status: { $ne: "Completed" }   
+});
 
     let items = [];
     let total = 0;
@@ -119,8 +132,6 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-
 
 
 router.put("/table/:tableId/chair/:chairId/ready-for-bill", protectUser, async (req, res) => {
@@ -290,10 +301,17 @@ router.get("/parcel", protectUser, async (req, res) => {
 router.post("/combined", protectUser, async (req, res) => {
   const { chairs, tableId } = req.body;
 
-  const orders = await Order.find({
+//   const orders = await Order.find({
+//   tableId,
+//   chairId: { $in: chairs },
+//   userId: req.user.id
+// });
+
+const orders = await Order.find({
   tableId,
   chairId: { $in: chairs },
-  userId: req.user.id
+  userId: req.user.id,
+  status: { $ne: "Completed" }   
 });
 
   const total = orders.reduce((acc, o) => acc + o.total, 0);
@@ -352,21 +370,34 @@ router.get("/completed-today", async (req, res) => {
 
 
 
+// router.put("/:id/complete", async (req, res) => {
+//   try {
+//     const order = await Order.findByIdAndUpdate(
+//       req.params.id,
+//       { status: "Completed" },
+//       { new: true }
+//     );
+
+//     res.json(order);
+
+//   } catch (error) {
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// });  
+
+
 router.put("/:id/complete", async (req, res) => {
-  try {
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status: "Completed" },
-      { new: true }
-    );
+  const order = await Order.findByIdAndUpdate(
+    req.params.id,
+    { status: "Completed" },
+    { new: true }
+  );
 
-    res.json(order);
+  const io = req.app.get("io");   
+  io.emit("orderUpdated", order); 
 
-  } catch (error) {
-    res.status(500).json({ message: "Server Error" });
-  }
-});  
-  
+  res.json(order);
+});
  
  
 router.put("/:id/cancel", async (req, res) => {
@@ -398,9 +429,6 @@ router.get("/:id", protectUser, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
-
-
-
+}); 
 
 module.exports = router;
