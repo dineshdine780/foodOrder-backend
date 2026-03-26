@@ -64,7 +64,6 @@ exports.getLiveOrders = async (req, res) => {
 };
 
 
-
 exports.completeOrder = async (req, res) => {
   try {
 
@@ -83,9 +82,7 @@ exports.completeOrder = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}; 
-
-
+};
 
 
 exports.getOrderById = async (req, res) => {
@@ -102,8 +99,7 @@ exports.getOrderById = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}; 
- 
+};
  
 
 exports.getOrderHistory = async (req, res) => {
@@ -111,7 +107,6 @@ exports.getOrderHistory = async (req, res) => {
     const { fromDate, toDate, date, item, user, category } = req.query;
 
     let filter = {};
-
     
     if (date) {
       const start = new Date(date);
@@ -131,34 +126,32 @@ exports.getOrderHistory = async (req, res) => {
 
       filter.createdAt = { $gte: start, $lte: end };
     }
-
     
     if (user) {
       filter.serverName = { $regex: user, $options: "i" };
     }
-
     
     if (item) {
       filter["items.name"] = { $regex: item, $options: "i" };
     }
-
     
     if (category && item) {
-  filter.items = {
-    $elemMatch: {
-      category: category,
-      name: { $regex: item, $options: "i" }
+      filter.items = {
+        $elemMatch: {
+          category: category,
+          name: { $regex: item, $options: "i" }
+        }
+      };
     }
-  };
-}
  
-else if (category) {
-  filter.items = {
-    $elemMatch: {
-      category: category
-    }
-  };
-} 
+    else if (category) {
+      filter.items = {
+        $elemMatch: {
+        category: category
+      }
+    };
+  } 
+
 
 else if (item) {
   filter["items.name"] = { $regex: item, $options: "i" };
@@ -174,10 +167,12 @@ else if (item) {
 };
 
 
-exports.getMonthlyReport = async (req, res) => {
-  try {
-    const { month, year } = req.query;
 
+exports.getMonthlyReport = async (req, res) => {
+
+  try {
+
+    const { month, year } = req.query;
     
     const currentDate = new Date();
     const selectedMonth = month ? Number(month) : currentDate.getMonth() + 1;
@@ -212,7 +207,6 @@ exports.getMonthlyReport = async (req, res) => {
       total,
       dailySales
     });
-
 
   } catch (error) {
     res.status(500).json({ error: error.message });
