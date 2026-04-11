@@ -97,8 +97,6 @@ router.post("/login", loginLimiter, async (req, res) => {
 });
 
 
-
-
 router.get("/status-check", protectUser, async (req, res) => {
   try {
     res.json({ status: "User authenticated" });

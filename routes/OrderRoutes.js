@@ -122,7 +122,7 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
 
       order.items.forEach(item => {
         items.push(item);
-        total += item.price * item.qty;
+        total += item.price * item.qty; 
       });
     }); 
 
@@ -130,9 +130,10 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
+  } 
 });
 
+  
 
 router.put("/table/:tableId/chair/:chairId/ready-for-bill", protectUser, async (req, res) => {
 
@@ -213,8 +214,6 @@ router.put("/table/:tableId/ready-for-bill", async (req, res) => {
 });
 
 
-
-
 // router.get("/table/:tableId", async (req, res) => {
 
 //   const orders = await Order.find({
@@ -225,8 +224,6 @@ router.put("/table/:tableId/ready-for-bill", async (req, res) => {
 //   res.json(orders);
 
 // });
-
-
 
 
 
@@ -248,7 +245,6 @@ router.put("/:id/status", async (req, res) => {
 });
 
 
-
 router.delete("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
   const { tableId, chairId } = req.params;
 
@@ -259,8 +255,7 @@ router.delete("/table/:tableId/chair/:chairId", protectUser, async (req, res) =>
   });
 
   res.json({ message: "Bill cleared" });
-});
-   
+}); 
 
  
 router.delete("/table/:tableId/complete", protectUser, async (req, res) => {
@@ -273,14 +268,16 @@ router.delete("/table/:tableId/complete", protectUser, async (req, res) => {
     await Order.deleteMany({
       tableId,
       userId: req.user.id
-    });
+    }); 
 
     res.json({ message: "Table bill completed and cleared" });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
+});  
+
+
 
  
 router.get("/parcel", protectUser, async (req, res) => {

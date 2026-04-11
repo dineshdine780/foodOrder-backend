@@ -1,35 +1,20 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
-
 const router = express.Router();
-
-const FILE = path.join(__dirname, "../data/tables.json");
-
-
-const dataFolder = path.join(__dirname, "../data");
-if (!fs.existsSync(dataFolder)) {
-  fs.mkdirSync(dataFolder);
-}
+const Table = require("../models/Table");
 
 
-if (!fs.existsSync(FILE)) {
-  fs.writeFileSync(FILE, JSON.stringify({ tablesCount: 4 }));
-}
-
-
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const data = JSON.parse(fs.readFileSync(FILE));
-    res.json({ tablesCount: data.tablesCount });
+    const table = await Table.findOne().sort({ createdAt: -1 });
+    res.json({ tablesCount: table?.tablesCount || 0 });
   } catch (err) {
-    console.error("GET ERROR:", err);
-    res.status(500).json({ message: "Server error reading file" });
+    console.error(err);
+    res.status(500).json({ message: "Error fetching data" });
   }
 });
 
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { tablesCount } = req.body;
 
@@ -37,13 +22,14 @@ router.post("/", (req, res) => {
       return res.status(400).json({ message: "Invalid table count" });
     }
 
-    fs.writeFileSync(FILE, JSON.stringify({ tablesCount }));
-    res.json({ message: "Tables updated!", tablesCount });
+    const newTable = new Table({ tablesCount });
+    await newTable.save();
 
+    res.json({ message: "Saved in MongoDB!", tablesCount });
   } catch (err) {
-    console.error("POST ERROR:", err);
-    res.status(500).json({ message: "Server error writing file" });
+    console.error(err);
+    res.status(500).json({ message: "Error saving data" });
   }
 });
- 
+
 module.exports = router;

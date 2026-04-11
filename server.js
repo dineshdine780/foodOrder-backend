@@ -99,7 +99,7 @@ const io = new Server(server, {
     origin: "*",
     methods: ["GET", "POST"],
   },
-  pingTimeout: 60000,
+  pingTimeout: 60000, 
 });
 
 
