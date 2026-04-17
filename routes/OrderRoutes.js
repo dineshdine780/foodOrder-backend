@@ -175,23 +175,7 @@ updatedOrders.forEach(order => {
 
 
 
-// router.put("/table/:tableId/ready-for-bill", async (req, res) => {
-//   try {
 
-//     const { tableId } = req.params;
-
-//     await Order.updateMany(
-//       { tableId: tableId },
-//       { $set: { status: "ReadyForBill" } }
-//     );
-
-//     res.json({ message: "Table moved to ReadyForBill" });
-
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
 
 
 
@@ -327,16 +311,25 @@ router.get("/", async (req, res) => {
 })
 
 
+// router.get("/", protectUser, async (req, res) => {
+//   const orders = await Order.find({
+//     orderType: "dinein",
+//     userId: req.user.id
+//   })
+//     .populate("userId", "name")
+//     .sort({ createdAt: -1 });
+
+//   res.json(orders);
+// }); 
+
+
 router.get("/", protectUser, async (req, res) => {
   const orders = await Order.find({
-    orderType: "dinein",
-    userId: req.user.id
-  })
-    .populate("userId", "name")
-    .sort({ createdAt: -1 });
+    orderType: "dinein"
+  }).sort({ createdAt: -1 });
 
   res.json(orders);
-}); 
+});
 
 
 
@@ -427,5 +420,33 @@ router.get("/:id", protectUser, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 }); 
+
+
+
+router.put("/:id/update-bill", protectUser, async (req, res) => {
+  try {
+    const { items, total } = req.body;
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { items, total },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const io = req.app.get("io");
+    io.emit("orderUpdated", order);
+
+    res.json(order);
+
+  } catch (error) {
+    console.log("UPDATE BILL ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 module.exports = router;
