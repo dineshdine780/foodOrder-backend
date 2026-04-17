@@ -423,7 +423,7 @@ router.get("/:id", protectUser, async (req, res) => {
 
 
 
-router.put("/:id/update-bill", protectUser, async (req, res) => {
+router.put("/:id/update-bill", async (req, res) => {
   try {
     const { items, total } = req.body;
 
