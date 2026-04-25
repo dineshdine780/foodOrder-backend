@@ -10,9 +10,9 @@ router.get("/history", getOrderHistory);
 router.get("/report/monthly", getMonthlyReport);
 
 
-
-
 router.post("/", protectUser, async (req, res) => {
+
+  console.log("REQ ITEMS:", req.body.items);
     
   const { tableId, chairId, items, orderType, customerName } = req.body;
    
@@ -25,7 +25,8 @@ router.post("/", protectUser, async (req, res) => {
 
  
 const newItems = items.map(item => ({
-  name: item.name,
+  name: item.name,   
+  tamilName: item.tamilName || "",
   qty: item.qty,
   price: item.price,
   image: item.image,
@@ -51,8 +52,9 @@ const newOrder = new Order({
 
   res.json({ message: "Order Placed", newOrder });
 
-}); 
+  console.log("REQ BODY:", req.body);
 
+}); 
 
 
 router.get("/table/:tableId", protectUser, async (req, res) => {
@@ -175,10 +177,6 @@ updatedOrders.forEach(order => {
 
 
 
-
-
-
-
 router.put("/table/:tableId/ready-for-bill", async (req, res) => {
 
   const tableId = req.params.tableId;
@@ -259,8 +257,7 @@ router.delete("/table/:tableId/complete", protectUser, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});  
-
+});
 
 
  
@@ -299,8 +296,8 @@ const orders = await Order.find({
 
   res.json({ total });
 });
- 
- 
+
+
  
 router.get("/", async (req, res) => {
   const orders = await Order.find()
@@ -320,7 +317,8 @@ router.get("/", async (req, res) => {
 //     .sort({ createdAt: -1 });
 
 //   res.json(orders);
-// }); 
+// });
+
 
 
 router.get("/", protectUser, async (req, res) => {
@@ -353,11 +351,7 @@ router.get("/completed-today", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-
 });
- 
-   
-
 
 
 // router.put("/:id/complete", async (req, res) => {
@@ -376,12 +370,13 @@ router.get("/completed-today", async (req, res) => {
 // });  
 
 
+
 router.put("/:id/complete", async (req, res) => {
   const order = await Order.findByIdAndUpdate(
     req.params.id,
     { status: "Completed" },
     { new: true }
-  );
+  );  
 
   const io = req.app.get("io");   
   io.emit("orderUpdated", order); 
@@ -448,5 +443,6 @@ router.put("/:id/update-bill", async (req, res) => {
   }
 });
 
+ 
 
 module.exports = router;

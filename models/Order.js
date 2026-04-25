@@ -25,6 +25,7 @@ const OrderSchema = new mongoose.Schema({
   items: [
     {
       name: String,
+      tamilName: String,
       qty: Number,
       price: Number,
       image: String,

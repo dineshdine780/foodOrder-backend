@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Food = require("../models/Food");
 
+
 router.get("/", async (req, res) => {
   try {
     const foods = await Food.find();
@@ -11,11 +12,18 @@ router.get("/", async (req, res) => {
   } 
 });
 
+
 router.post("/", async (req, res) => { 
   try {
-    const { name, category, price, image } = req.body;
+    const { name, tamilName, category, price, image } = req.body;
 
-    const newFood = new Food({ name,category, price, image });
+    const newFood = new Food({
+  name,
+  tamilName: tamilName && tamilName.trim() !== "" ? tamilName : name,
+  category,
+  price,
+  image
+});
     await newFood.save();
 
     const io = req.app.get("io");
@@ -29,19 +37,45 @@ router.post("/", async (req, res) => {
 }); 
 
 
+
 router.put("/:id", async (req, res) => {
   try {
+
+    const updateData = {
+      ...req.body,
+      tamilName:
+        req.body.tamilName && req.body.tamilName.trim() !== ""
+          ? req.body.tamilName
+          : req.body.name
+    };
+
     const food = await Food.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { $set: updateData },
       { new: true }
     );
 
     res.json(food);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
+
+// router.put("/:id", async (req, res) => {
+//   try {
+//     const food = await Food.findByIdAndUpdate(
+//       req.params.id,
+//       { $set: req.body },
+//       { new: true }
+//     );
+
+//     res.json(food);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 
 router.delete("/:id", async (req, res) => {
