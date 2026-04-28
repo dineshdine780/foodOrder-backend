@@ -41,10 +41,11 @@ const newOrder = new Order({
   chairId,
   items: newItems,   
   total,
-  orderType,
+  orderType, 
   customerName
-});
-
+});    
+    
+    
   await newOrder.save(); 
 
   const io = req.app.get("io");
@@ -53,7 +54,8 @@ const newOrder = new Order({
   res.json({ message: "Order Placed", newOrder });
 
   console.log("REQ BODY:", req.body);
-
+  console.log(); 
+  
 }); 
 
 

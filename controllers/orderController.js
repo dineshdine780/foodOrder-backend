@@ -5,8 +5,8 @@ exports.getLiveOrders = async (req, res) => {
   try {
 
    const orders = await Order.find({
-    status: { $nin: ["Completed", "completed"] }
-   }).sort({ createdAt: -1 });
+  status: { $nin: ["Completed", "completed", "Cancelled", "cancelled"] }
+}).sort({ createdAt: -1 });
 
     const tables = {};
 
@@ -72,7 +72,6 @@ exports.completeOrder = async (req, res) => {
       { status: "Completed" },
       { new: true }
     );
-
     
     const io = req.app.get("io");
     io.emit("orderUpdated", order);
@@ -83,6 +82,7 @@ exports.completeOrder = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 exports.getOrderById = async (req, res) => {
