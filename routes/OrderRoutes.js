@@ -98,6 +98,8 @@ router.get("/table/:tableId", protectUser, async (req, res) => {
 });
 
 
+
+
 router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
   try {
     const { tableId, chairId } = req.params;
@@ -136,6 +138,8 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
     res.status(500).json({ error: err.message });
   } 
 });
+
+
 
   
 
@@ -229,6 +233,7 @@ router.put("/:id/status", async (req, res) => {
 });
 
 
+
 router.delete("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
   const { tableId, chairId } = req.params;
 
@@ -310,6 +315,7 @@ router.get("/", async (req, res) => {
 })
 
 
+
 // router.get("/", protectUser, async (req, res) => {
 //   const orders = await Order.find({
 //     orderType: "dinein",
@@ -354,6 +360,7 @@ router.get("/completed-today", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 
 // router.put("/:id/complete", async (req, res) => {
@@ -444,7 +451,6 @@ router.put("/:id/update-bill", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
  
 
 module.exports = router;
