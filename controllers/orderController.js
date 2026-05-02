@@ -106,7 +106,9 @@ exports.getOrderHistory = async (req, res) => {
   try {
     const { fromDate, toDate, date, item, user, category } = req.query;
 
-    let filter = {};
+    let filter = {
+      status: { $in: ["Completed", "completed"] }
+    };
     
     if (date) {
       const start = new Date(date);
@@ -125,7 +127,7 @@ exports.getOrderHistory = async (req, res) => {
       end.setUTCHours(23, 59, 59, 999);
 
       filter.createdAt = { $gte: start, $lte: end };
-    }
+    }  
     
     if (user) {
       filter.serverName = { $regex: user, $options: "i" };
@@ -143,11 +145,10 @@ exports.getOrderHistory = async (req, res) => {
         }
       };
     }
- 
     else if (category) {
       filter.items = {
         $elemMatch: {
-        category: category
+        category: category 
       }
     };
   } 
@@ -206,9 +207,9 @@ exports.getMonthlyReport = async (req, res) => {
       year: selectedYear,
       total,
       dailySales
-    });
+    });  
 
   } catch (error) {
     res.status(500).json({ error: error.message });
-  }
+  } 
 };

@@ -7,7 +7,7 @@ const { getLiveOrders, getOrderById, getOrderHistory, getMonthlyReport } = requi
 
 router.get("/live", getLiveOrders);
 router.get("/history", getOrderHistory);
-router.get("/report/monthly", getMonthlyReport);
+router.get("/report/monthly", getMonthlyReport); 
 
 
 router.post("/", protectUser, async (req, res) => {
@@ -43,8 +43,7 @@ const newOrder = new Order({
   total,
   orderType, 
   customerName
-});    
-    
+});
     
   await newOrder.save(); 
 
@@ -72,7 +71,7 @@ router.get("/table/:tableId", protectUser, async (req, res) => {
       tableId,
       userId: req.user.id,
       status: { $ne: "Completed" }   
-    });
+    });  
 
     const chairMap = {};
 
@@ -83,21 +82,19 @@ router.get("/table/:tableId", protectUser, async (req, res) => {
           total: 0,
           status: order.status
         };
-      }
-
+      }   
+          
       order.items.forEach(item => {
         chairMap[order.chairId].total += item.price * item.qty;
-      });
-    });  
-
+      });  
+    });    
+   
     res.json(Object.values(chairMap));
-
+   
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message }); 
   }
 });
-
-
 
 
 router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
@@ -112,7 +109,7 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
     //   userId: req.user.id
     // });
 
-    const orders = await Order.find({
+  const orders = await Order.find({
   tableId,
   chairId,
   userId: req.user.id,
@@ -137,11 +134,9 @@ router.get("/table/:tableId/chair/:chairId", protectUser, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   } 
-});
+}); 
 
 
-
-  
 
 router.put("/table/:tableId/chair/:chairId/ready-for-bill", protectUser, async (req, res) => {
 
@@ -182,10 +177,11 @@ updatedOrders.forEach(order => {
 });
 
 
-
 router.put("/table/:tableId/ready-for-bill", async (req, res) => {
 
-  const tableId = req.params.tableId;
+  const tableId = req.params.tableId;   
+
+  await Order.updateMeny()
 
   await Order.updateMany(
     {
@@ -212,7 +208,6 @@ router.put("/table/:tableId/ready-for-bill", async (req, res) => {
 //   res.json(orders);
 
 // });
-
 
 
 router.put("/:id/status", async (req, res) => {
@@ -265,7 +260,6 @@ router.delete("/table/:tableId/complete", protectUser, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
  
 router.get("/parcel", protectUser, async (req, res) => {
