@@ -15,6 +15,7 @@ const loginLimiter = rateLimit({
 });
 
 
+
 router.post("/register", async (req, res) => {
   try {
     let { name, phone, password } = req.body;
@@ -99,6 +100,9 @@ const token = jwt.sign(
 });
 
 
+
+
+
 router.get("/status-check", protectUser, async (req, res) => {
   try {
     res.json({ status: "User authenticated" });
@@ -107,5 +111,19 @@ router.get("/status-check", protectUser, async (req, res) => {
   }
 });
 
+
+
+router.get("/users", async (req, res) => {
+  try {
+
+    const users = await User.find();
+
+    res.json(users);
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 module.exports = router;
